@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          python app.py > ../backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5001/api/health > /dev/null && exit 0
+            sleep 1
+          done
+          echo "Backend did not become healthy in time"
+          exit 1
+
+      - name: Run backend smoke test
+        run: python test_backend.py
+
+      - name: Show backend log
+        if: failure()
+        run: cat backend.log
