@@ -1,3 +1,4 @@
+import sys
 import requests
 import json
 from datetime import datetime
@@ -6,6 +7,7 @@ BASE_URL = "http://localhost:5001/api"
 
 def test_backend():
     print("🔧 Testing Workana Monitor Backend...")
+    failed = False
     
     try:
         print("\n1. Testing health check endpoint...")
@@ -45,8 +47,10 @@ def test_backend():
         else:
             print(f"❌ Project submission failed: {response.status_code}")
             print(f"   Response: {response.text}")
+            failed = True
     except Exception as e:
         print(f"❌ Project submission error: {e}")
+        failed = True
     
     try:
         print("\n3. Testing project retrieval...")
@@ -59,8 +63,10 @@ def test_backend():
                 print(f"   Latest project: {data['projects'][0].get('Title', 'N/A')}")
         else:
             print(f"❌ Project retrieval failed: {response.status_code}")
+            failed = True
     except Exception as e:
         print(f"❌ Project retrieval error: {e}")
+        failed = True
     
     try:
         print("\n4. Testing statistics endpoint...")
@@ -73,8 +79,10 @@ def test_backend():
             print(f"   Excel file exists: {stats.get('excel_file_exists', False)}")
         else:
             print(f"❌ Statistics failed: {response.status_code}")
+            failed = True
     except Exception as e:
         print(f"❌ Statistics error: {e}")
+        failed = True
     
     print("\n🎉 Backend testing completed!")
     print("\n📋 Next Steps:")
@@ -83,7 +91,7 @@ def test_backend():
     print("3. Visit https://www.workana.com/jobs to test scraping")
     print("4. Check for notifications and Excel file updates")
     
-    return True
+    return not failed
 
 if __name__ == "__main__":
-    test_backend()
+    sys.exit(0 if test_backend() else 1)
